@@ -1,42 +1,51 @@
-#!/bin/bash
+#!/bin/sh
+
 set -e
 
-# Variables por defecto
-DB_HOST=${DB_HOST:-127.0.0.1}
-DB_PORT=${DB_PORT:-3306}
-MIGRATE_FRESH=${MIGRATE_FRESH:-false}   # si pones MIGRATE_FRESH=true hará migrate:fresh --seed
+echo "🚀 Iniciando contenedor Laravel..."
 
-echo "⏳ Esperando a que la base de datos en $DB_HOST:$DB_PORT esté disponible..."
-
-# Esperar a que el puerto MySQL responda (usa nc). Reintentos infinitos, 2s entre intentos.
-until nc -z $DB_HOST $DB_PORT >/dev/null 2>&1; do
-  echo "Esperando DB... ($DB_HOST:$DB_PORT)"
-  sleep 2
+# Esperar a que MySQL esté disponible
+echo "⏳ Esperando conexión con la base de datos..."
+until php -r "try { new PDO('mysql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT'), getenv('DB_USERNAME'), getenv('DB_PASSWORD')); } catch (Exception \$e) { exit(1); }"; do
+  echo "   ➜ Base de datos no disponible todavía..."
+  sleep 3
 done
 
-echo "✅ Base de datos accesible."
+echo "✅ Base de datos conectada correctamente."
 
-# Limpiar caches (no fallará si algo salta)
-php artisan config:clear || true
-php artisan cache:clear || true
-php artisan route:clear || true
-php artisan view:clear || true
+# Ejecutar composer (solo si no hay vendor)
+if [ ! -d "vendor" ]; then
+  echo "📦 Instalando dependencias de Composer..."
+  composer install --no-dev --optimize-autoloader
+fi
 
-# Ejecutar migraciones
-if [ "$MIGRATE_FRESH" = "true" ] || [ "$MIGRATE_FRESH" = "1" ]; then
+# Generar APP_KEY si no existe
+if [ ! -f ".env" ]; then
+  echo "⚙️  Generando archivo .env..."
+  cp .env.example .env
+fi
+
+php artisan key:generate --force || true
+
+# Limpiar caches
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+
+# Verificar variable MIGRATE_FRESH
+if [ "$MIGRATE_FRESH" = "true" ]; then
   echo "⚠️ MIGRATE_FRESH activado: ejecutando php artisan migrate:fresh --seed --force"
   php artisan migrate:fresh --seed --force
 else
-  echo "Ejecutando php artisan migrate --force"
+  echo "🔹 Ejecutando migraciones normales..."
   php artisan migrate --force
 fi
 
-# Cachear para producción (no falla si ya está cacheado)
-php artisan config:cache || true
-php artisan route:cache || true
-php artisan view:cache || true
+# Crear enlace de almacenamiento
+php artisan storage:link || true
 
-echo "✅ Migraciones y caches listas. Lanzando Apache..."
+echo "✅ Todo listo. Iniciando servidor Laravel..."
 
-# Ejecutar el comando proporcionado (por ejemplo apache2-foreground)
-exec "$@"
+# Ejecutar el servidor PHP en el puerto 8000 (Render lo redirige al 10000 interno)
+exec php artisan serve --host=0.0.0.0 --port=8000

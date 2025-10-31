@@ -8,12 +8,6 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
 
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader
-      php artisan key:generate
-      php artisan migrate --force
-      php artisan storage:link
-
     startCommand: ""
 
     envVars:
@@ -23,6 +17,8 @@ services:
         value: false
       - key: APP_URL
         value: https://anttec-back.onrender.com
+
+      # 🔹 Base de datos
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
@@ -34,4 +30,8 @@ services:
       - key: DB_USERNAME
         value: wilson
       - key: DB_PASSWORD
-        value: "wilsonCMV
+        value: "wilsonCMV20_"
+
+      # 🔹 Activa las migraciones completas con seed
+      - key: MIGRATE_FRESH
+        value: "true"
