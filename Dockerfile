@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
-COPY . .      # <-- Copiamos todo el proyecto ANTES de instalar dependencias
+COPY ./ /app/
+   # <-- Copiamos todo el proyecto ANTES de instalar dependencias
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Etapa 2: Servidor Apache con PHP
