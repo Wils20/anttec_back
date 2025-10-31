@@ -4,15 +4,23 @@ services:
     env: docker
     plan: free
     branch: master
+
+    # Rutas del Dockerfile y contexto de construcción
     rootDir: .
     dockerfilePath: ./Dockerfile
     dockerContext: .
+
+    # Laravel usa Apache dentro del contenedor (definido en Dockerfile)
+    # Por tanto, NO hace falta php artisan serve
     buildCommand: |
       composer install --no-dev --optimize-autoloader
       php artisan key:generate
       php artisan migrate --force
       php artisan storage:link
-    startCommand: php artisan serve --host 0.0.0.0 --port 10000
+
+    # Render usa automáticamente el CMD del Dockerfile (apache2-foreground)
+    startCommand: ""
+
     envVars:
       - key: APP_ENV
         value: production
@@ -20,6 +28,8 @@ services:
         value: false
       - key: APP_URL
         value: https://anttec-back.onrender.com
+
+      # Configuración de base de datos AlwaysData
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
@@ -31,7 +41,9 @@ services:
       - key: DB_USERNAME
         value: wilson
       - key: DB_PASSWORD
-        value: wilsonCMV20_
+        value: "wilsonCMV20_"  # 🔒 Contraseña protegida con comillas
+
+      # Otros controladores Laravel
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_DRIVER
