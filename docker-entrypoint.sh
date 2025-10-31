@@ -1,9 +1,10 @@
 #!/bin/sh
+
 set -e
 
 echo "🚀 Iniciando contenedor Laravel (Apache)..."
 
-# Esperar a que MySQL esté disponible
+# Esperar conexión con la base de datos
 echo "⏳ Esperando conexión con la base de datos..."
 until php -r "try { new PDO('mysql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT'), getenv('DB_USERNAME'), getenv('DB_PASSWORD')); } catch (Exception \$e) { exit(1); }"; do
   echo "   ➜ Base de datos no disponible todavía..."
@@ -11,27 +12,27 @@ until php -r "try { new PDO('mysql:host=' . getenv('DB_HOST') . ';port=' . geten
 done
 echo "✅ Base de datos conectada correctamente."
 
-# Instalar dependencias si no existen
+# Instalar dependencias si faltan
 if [ ! -d "vendor" ]; then
   echo "📦 Instalando dependencias de Composer..."
   composer install --no-dev --optimize-autoloader
 fi
 
-# Crear .env si no existe
+# Generar clave de aplicación si no existe
 if [ ! -f ".env" ]; then
-  echo "⚙️  Generando archivo .env..."
+  echo "⚙️ Generando archivo .env..."
   cp .env.example .env
 fi
 
 php artisan key:generate --force || true
 
-# Limpiar cachés
+# Limpiar caches
 php artisan config:clear || true
 php artisan cache:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
 
-# Ejecutar migraciones
+# Migraciones y seeders
 if [ "$MIGRATE_FRESH" = "true" ]; then
   echo "⚠️ MIGRATE_FRESH activado: ejecutando php artisan migrate:fresh --seed --force"
   php artisan migrate:fresh --seed --force
@@ -43,10 +44,12 @@ fi
 # Crear enlace de almacenamiento
 php artisan storage:link || true
 
-# Cachear nuevamente
+# Cachear configuración
 php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true
 
 echo "✅ Laravel listo. Iniciando Apache..."
+
+# Ejecutar Apache en primer plano (Render lo detecta)
 exec apache2-foreground
