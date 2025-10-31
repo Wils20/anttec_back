@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Instalar dependencias del sistema y extensiones de PHP
+# Instalar dependencias del sistema y extensiones PHP necesarias para Laravel
 RUN apt-get update && apt-get install -y \
     git unzip libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libzip-dev zip curl && \
     docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip

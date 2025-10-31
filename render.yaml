@@ -4,7 +4,7 @@ services:
     env: docker
     plan: free
     branch: master
-    rootDir: laravel
+    rootDir: .
     buildCommand: |
       composer install
       php artisan key:generate
