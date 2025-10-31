@@ -7,31 +7,31 @@ return [
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
     |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+    | Configura los permisos CORS para tu API.
     |
     */
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
+    // Permitir todos los métodos HTTP
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'http://localhost:5173',
-        'https://anttec-front.vercel.app',
-    ],
+    // Permitir cualquier origen
+    'allowed_origins' => ['*'],
 
+    // Opcional: patrones de orígenes (no se usa si allowed_origins es '*')
     'allowed_origins_patterns' => [],
 
+    // Permitir cualquier cabecera
     'allowed_headers' => ['*'],
 
+    // Cabeceras expuestas al frontend
     'exposed_headers' => [],
 
+    // Tiempo máximo para cachear la preflight request
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    // Permitir envío de cookies o autenticación
+    'supports_credentials' => false,
 
 ];
