@@ -1,26 +1,23 @@
 services:
   - type: web
-    name: anttec-laravel
-    env: php
-    rootDir: .
-    region: oregon
+    name: anttec-back
+    env: docker
     plan: free
+    branch: master
+    rootDir: laravel
     buildCommand: |
-      composer install --no-dev --optimize-autoloader
+      composer install
       php artisan key:generate
-      php artisan storage:link
       php artisan migrate --force
-      php artisan config:cache
-      php artisan route:cache
-      php artisan view:cache
-    startCommand: php artisan serve --host 0.0.0.0 --port $PORT
+      php artisan storage:link
+    startCommand: php artisan serve --host 0.0.0.0 --port 10000
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
-      - key: APP_KEY
-        sync: false
+      - key: APP_URL
+        value: https://anttec-back.onrender.com
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
@@ -32,4 +29,10 @@ services:
       - key: DB_USERNAME
         value: wilson
       - key: DB_PASSWORD
-        value: "wilsonCMV20:"
+        value: wilsonCMV20
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_DRIVER
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
