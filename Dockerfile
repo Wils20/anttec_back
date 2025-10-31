@@ -1,37 +1,43 @@
-# Etapa 1: Instalar dependencias de Composer
-FROM composer:2 AS vendor
+# Etapa 1: Construcción e instalación de dependencias
+FROM php:8.2-cli AS build
 
-# Instalar extensiones necesarias también aquí
 RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    zip \
     libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
-    zip \
-    unzip \
-    git \
-    && docker-php-ext-install pdo_mysql mbstring bcmath gd
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+
+# Instalar Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Etapa 2: Imagen base PHP con Apache
+COPY . .
+
+# Etapa 2: Servidor Apache con PHP
 FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y \
     libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
-    zip \
-    unzip \
-    git \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
-
-RUN a2enmod rewrite
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd \
+    && a2enmod rewrite
 
 WORKDIR /var/www/html
 COPY . .
-COPY --from=vendor /app/vendor /var/www/html/vendor
+COPY --from=build /app/vendor /var/www/html/vendor
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
