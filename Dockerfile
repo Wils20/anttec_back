@@ -17,10 +17,8 @@ RUN apt-get update && apt-get install -y \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
-COPY composer.json composer.lock ./
+COPY . .      # <-- Copiamos todo el proyecto ANTES de instalar dependencias
 RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-COPY . .
 
 # Etapa 2: Servidor Apache con PHP
 FROM php:8.2-apache
