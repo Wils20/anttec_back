@@ -7,31 +7,34 @@ return [
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
     |
-    | Configura los permisos CORS para tu API.
+    | Aquí defines cómo tu API responde a las solicitudes desde otros orígenes.
+    | En este caso, permitimos todas las rutas y métodos porque tu frontend
+    | está en Netlify y el backend en Render.
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    // 🔓 Aplicar CORS a todas las rutas del backend
+    'paths' => ['*'],
 
-    // Permitir todos los métodos HTTP
+    // ✅ Permitir todos los métodos HTTP (GET, POST, PUT, DELETE, etc.)
     'allowed_methods' => ['*'],
 
-    // Permitir cualquier origen
+    // 🌍 Permitir solicitudes desde cualquier dominio (Netlify incluido)
     'allowed_origins' => ['*'],
 
-    // Opcional: patrones de orígenes (no se usa si allowed_origins es '*')
+    // (Opcional) patrones de origen — no se usa si arriba tienes '*'
     'allowed_origins_patterns' => [],
 
-    // Permitir cualquier cabecera
+    // ✅ Permitir cualquier cabecera
     'allowed_headers' => ['*'],
 
-    // Cabeceras expuestas al frontend
+    // Cabeceras expuestas al frontend (por si las necesitas)
     'exposed_headers' => [],
 
-    // Tiempo máximo para cachear la preflight request
+    // Tiempo que el navegador puede cachear la respuesta de preflight
     'max_age' => 0,
 
-    // Permitir envío de cookies o autenticación
+    // ⚙️ Si usas cookies o sesiones, cámbialo a true. Si usas tokens Bearer, déjalo en false.
     'supports_credentials' => false,
 
 ];
